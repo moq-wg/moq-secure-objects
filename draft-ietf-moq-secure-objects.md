@@ -273,6 +273,12 @@ of the tuple.
 The Track Name is varint encoded length followed by sequence of bytes
 that identifies an individual track within the namespace.
 
+When the Serialized Full Track Name is used in HKDF key derivation
+({{keys}}) or as part of the `SECURE_OBJECT_AAD` ({{aad}}), all varints
+within the serialization MUST be encoded using the minimum number of
+bytes required to represent the value (i.e., canonical varint
+encoding).  This requirement ensures that both the sender and the
+receiver independently produce identical byte sequences.
 
 The `+` represents concatenation of byte sequences.
 
@@ -467,11 +473,11 @@ structure captures the input to the AEAD function's AAD argument:
 
 ~~~  pseudocode
 SECURE_OBJECT_AAD {
-    Key ID (i),
-    Group ID (i),
-    Object ID (i),
+    Key ID (64),
+    Group ID (64),
+    Object ID (32),
     Track Namespace (..),
-    Track Name Length (i),
+    Track Name Length (16),
     Track Name (..),
     Serialized Immutable Properties (..)
 }
@@ -480,7 +486,19 @@ SECURE_OBJECT_AAD {
 Open Issue: We need to sort out of we can remove most the things from
 SECURE_OBJECT_AAD because they are already bound to the keys.
 
-* Track Namespace is serialized as in section 2.4.1 of MoQT.
+The `Key ID`, `Group ID`, `Object ID`, and `Track Name Length` fields
+are encoded as unsigned big-endian integers of the size indicated in
+bits (64, 64, 32, and 16 bits respectively).  Fixed-size encodings are
+used here rather than varints because both the sender and receiver must
+independently reconstruct identical byte sequences for the AAD, and
+MOQ's variable-length integer encoding permits multiple valid
+representations of the same value.
+
+* Track Namespace is serialized as in section 2.4.1 of MoQT.  When
+  serializing the Track Namespace or Track Name for inclusion in the
+  AAD, each varint within the serialization MUST be encoded using the
+  minimum number of bytes required to represent the value (i.e.,
+  canonical varint encoding).
 
 Serialized Immutable Properties MUST include the `Secure Object Key ID`
 property containing the Key ID.
@@ -663,10 +681,15 @@ SFrame:
 
 * The format of the AAD is different:
 
-    * The SFrame Header is constructed using MoQT-style varints, instead
-      of the variable-length integer scheme defined in SFrame.
+    * The numeric fields in the AAD (Key ID, Group ID, Object ID, and
+      Track Name Length) are encoded as fixed-size big-endian unsigned
+      integers, rather than using a variable-length integer scheme.
+      This avoids ambiguity that would arise from MOQ's variable-length
+      integer encoding, which permits multiple valid representations of
+      the same value; both sender and receiver must independently
+      reconstruct identical AAD byte sequences.
 
-    * The GroupID and GroupID are sent directly, not as the packed CTR
+    * The Group ID and Object ID are sent directly, not as the packed CTR
       value.
 
 * The `metadata` input in to SFrame operations is defined to be the
