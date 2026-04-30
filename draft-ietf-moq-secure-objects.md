@@ -314,31 +314,29 @@ The detailed encryption process is shown below:
           v                        v
           +-----------------------------------------------------------+
                                                                       |
-+----------------+           +-------------------------------+        |
-| track_base_key |           | Key ID, Group ID, Object ID,  |        |
-| (per Key ID)   |           | Track Namespace, Track Name,  |        |
-+-------+--------+           | Serialized Immutable Ext.     |        |
-        |                    +-------+-----------------------+        |
-        v                            |                                |
-+-------+--------+                   +------------+-----------+       |
-| Key Derivation |                   |                        |       |
-| (HKDF)         |                   v                        v       |
-+---+---------+--+              +------------------------+  +-----+   |
-    |         |                 | CTR = GID(64)||OID(32) |  | AAD |   |
-    |         |                 +----+-------------------+  +-----+   |
-    |         |                      |                        |       |
-    |        salt                    |                        |       |
-    |         |                      v                        |       |
-    |         |            +----+-----------+                 |       |
-    |         +----------> | Nonce Formation|                 |       |
-    |                      +----+-----------+                 |       |
-    |                                |                        |       |
-   key                             nonce                     aad     pt
-    |                                |                        |       |
-    |                                v                        |       |
-    |    +-------------+--------------+                       |       |
-    |    |                            |                       |       |
-    +--->+        AEAD.Encrypt        +<----------------------+       |
++----------------+      +-------------+     +------------------+      |
+| track_base_key |      | Group ID,   |     | Serialized       |      |
+| (per Key ID)   |      | Object ID   |     | Immutable Prop.  |      |
++-------+--------+      +------+------+     +--------+---------+      |
+        |                      |                     |                |
+        v                      v                     v                |
++-------+--------+      +------------------------+ +-----+            |
+| Key Derivation |      | CTR = GID(64)||OID(32) | | AAD |            |
+| (HKDF)         |      +----+-------------------+ +--+--+            |
++---+---------+--+           |                       |                |
+    |         |              |                       |                |
+    |        salt            |                       |                |
+    |         |              v                       |                |
+    |         |    +----+-----------+                |                |
+    |         +--> | Nonce Formation|                |                |
+    |              +----+-----------+                |                |
+    |                        |                       |                |
+   key                     nonce                    aad              pt
+    |                        |                       |                |
+    |                        v                       |                |
+    |    +-------------+--------------+              |                |
+    |    |                            |              |                |
+    +--->+        AEAD.Encrypt        +<-------------+                |
          |                            |<------------------------------+
          +-------------+--------------+
                        |
@@ -387,31 +385,29 @@ The detailed decryption process is shown below:
                        |
                        +----------------------------------------------+
                                                                       |
-+----------------+           +-------------------------------+        |
-| track_base_key |           | Key ID, Group ID, Object ID,  |        |
-| (per Key ID)   |           | Track Namespace, Track Name,  |        |
-+-------+--------+           | Serialized Immutable Ext.     |        |
-        |                    +-------+-----------------------+        |
-        v                            |                                |
-+-------+--------+                   +------------------------+       |
-| Key Derivation |                   |                        |       |
-| (HKDF)         |                   v                        v       |
-+---+------------+              +------------------------+  +-----+   |
-    |         |                 | CTR = GID(64)||OID(32) |  | AAD |   |
-    |         |                 +----+-------------------+  +-----+   |
-    |         |                      |                        |       |
-    |       salt                     |                        |       |
-    |         |                      v                        |       |
-    |         |            +----------------+                 |       |
-    |         +----------> | Nonce Formation|                 |       |
-    |                      +----------------+                 |       |
-    |                                |                        |       |
-   key                             nonce                     aad     ct
-    |                                |                        |       |
-    |                                v                        |       |
-    |    +----------------------------+                       |       |
-    |    |                            |                       |       |
-    +--->|        AEAD.Decrypt        |<----------------------+       |
++----------------+      +-------------+     +------------------+      |
+| track_base_key |      | Group ID,   |     | Serialized       |      |
+| (per Key ID)   |      | Object ID   |     | Immutable Prop.  |      |
++-------+--------+      +------+------+     +--------+---------+      |
+        |                      |                     |                |
+        v                      v                     v                |
++-------+--------+      +------------------------+ +-----+            |
+| Key Derivation |      | CTR = GID(64)||OID(32) | | AAD |            |
+| (HKDF)         |      +----+-------------------+ +--+--+            |
++---+------------+           |                       |                |
+    |         |              |                       |                |
+    |       salt             |                       |                |
+    |         |              v                       |                |
+    |         |    +----------------+                |                |
+    |         +--> | Nonce Formation|                |                |
+    |              +----------------+                |                |
+    |                        |                       |                |
+   key                     nonce                    aad              ct
+    |                        |                       |                |
+    |                        v                       |                |
+    |    +----------------------------+              |                |
+    |    |                            |              |                |
+    +--->|        AEAD.Decrypt        |<-------------+                |
          |                            |<------------------------------+
          +-------------+--------------+
                        |
@@ -467,20 +463,17 @@ structure captures the input to the AEAD function's AAD argument:
 
 ~~~  pseudocode
 SECURE_OBJECT_AAD {
-    Key ID (i),
-    Group ID (i),
-    Object ID (i),
-    Track Namespace (..),
-    Track Name Length (i),
-    Track Name (..),
     Serialized Immutable Properties (..)
 }
 ~~~
 
-Open Issue: We need to sort out of we can remove most the things from
-SECURE_OBJECT_AAD because they are already bound to the keys.
+The AAD contains only the Serialized Immutable Properties because all
+other values are already cryptographically bound elsewhere:
 
-* Track Namespace is serialized as in section 2.4.1 of MoQT.
+* Key ID is included in Serialized Immutable Properties (via the
+  `Secure Object Key ID` property)
+* Group ID and Object ID are bound through the nonce (see {{nonce}})
+* Full Track Name is bound through key derivation (see {{keys}})
 
 Serialized Immutable Properties MUST include the `Secure Object Key ID`
 property containing the Key ID.
@@ -661,13 +654,10 @@ SFrame:
   SFrame Header), but constructed locally by the encrypting and
   decrypting endpoints.
 
-* The format of the AAD is different:
-
-    * The SFrame Header is constructed using MoQT-style varints, instead
-      of the variable-length integer scheme defined in SFrame.
-
-    * The GroupID and GroupID are sent directly, not as the packed CTR
-      value.
+* The format of the AAD is different: the AAD contains only the
+  Serialized Immutable Properties, as other values (Key ID, Group ID,
+  Object ID, Full Track Name) are already bound via key derivation
+  or nonce construction.
 
 * The `metadata` input in to SFrame operations is defined to be the
   FullTrackName value for the object.
