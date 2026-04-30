@@ -467,15 +467,21 @@ structure captures the input to the AEAD function's AAD argument:
 
 ~~~  pseudocode
 SECURE_OBJECT_AAD {
-    Key ID (i),
-    Group ID (i),
-    Object ID (i),
+    Key ID (64),
+    Group ID (64),
+    Object ID (64),
     Track Namespace (..),
     Track Name Length (i),
     Track Name (..),
     Serialized Immutable Properties (..)
 }
 ~~~
+
+The Key ID, Group ID, and Object ID fields are encoded as 64-bit unsigned
+integers in big-endian (network) byte order. This fixed-width encoding
+ensures that both sender and receiver construct identical AAD values
+without ambiguity, as variable-length integer encodings permit multiple
+valid representations of the same value.
 
 Open Issue: We need to sort out of we can remove most the things from
 SECURE_OBJECT_AAD because they are already bound to the keys.
@@ -488,12 +494,13 @@ property containing the Key ID.
 ## Nonce Formation {#nonce}
 
 The Group ID and Object ID for an object are used to form a 96-bit
-counter (CTR) value, which XORed with a salt to form the nonce used in
-AEAD encryption.  The counter value is formed by bitwise concatenating
-the Group ID as 64 bit integer and Object ID as 32 bit integer. This
-encryption/decryption will fail if applied to an object where group ID
-is larger than 2<sup>64</sup> or the object ID is larger than
-2<sup>32</sup> and the MoQT Object MUST NOT be processed further.
+counter (CTR) value, which is XORed with a salt to form the nonce used in
+AEAD encryption. The counter value is formed by encoding the Group ID as
+a 64-bit big-endian unsigned integer, followed by the Object ID encoded
+as a 32-bit big-endian unsigned integer. This encryption/decryption will
+fail if applied to an object where group ID is larger than 2^64-1 or the
+object ID is larger than 2^32-1 and the MoQT Object MUST NOT be processed
+further.
 
 ## Key and Salt Derivation {#keys}
 
