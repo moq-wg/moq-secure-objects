@@ -648,7 +648,7 @@ contained data until transfer completion.
 
 This specification does not provide security for Track Extensions.
 If an application needs end to end security for track associated data,
-developers are advised to send that data as an Object Extension in the
+the application SHOULD send that data as an Object Extension in the
 first object of each group.
 
 
