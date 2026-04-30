@@ -209,8 +209,8 @@ Datagrams or QUIC streams.
 
 | Protection Level | Fields |
 |:-----------------|:-------|
-| Unprotected and Unauthenticated (HBH only) | Track Alias, Priority, Mutable Properties |
-| End-to-End Authenticated | Group ID, Object ID, Immutable Properties, Track Namespace, Track Name (including Key ID) |
+| Unprotected and Unauthenticated (HBH only) | Track Alias, Mutable Properties |
+| End-to-End Authenticated | Group ID, Object ID, Publisher Priority, Immutable Properties, Track Namespace, Track Name (including Key ID) |
 | End-to-End Encrypted and Authenticated | Original Payload, Encrypted Properties List |
 {: #tbl-protection-levels title="MoQ Object Security Protection Levels" }
 
@@ -457,10 +457,11 @@ below:
 
 ## Metadata Authentication {#aad}
 
-The Key ID, Full Track Name, Immutable Properties, Group ID, and Object
-ID for a given MoQT Object are authenticated as part of secure object
-encryption.  This ensures, for example, that encrypted objects cannot be
-replayed across tracks.
+The Key ID, Full Track Name, Immutable Properties, Group ID, Object
+ID, and Publisher Priority for a given MoQT Object are authenticated as
+part of secure object encryption.  This ensures, for example, that
+encrypted objects cannot be replayed across tracks and that the
+publisher's intended priority cannot be modified without detection.
 
 When protecting or unprotecting a secure object, the following data
 structure captures the input to the AEAD function's AAD argument:
@@ -470,6 +471,7 @@ SECURE_OBJECT_AAD {
     Key ID (i),
     Group ID (i),
     Object ID (i),
+    Publisher Priority (8),
     Track Namespace (..),
     Track Name Length (i),
     Track Name (..),
