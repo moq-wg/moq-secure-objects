@@ -664,7 +664,7 @@ normal operation, while other fields are expected to be visible but
 immutable. See {{MoQ-TRANSPORT}} for details.
 
 This specification assumes that the Original Publisher and End Subscriber
-share one or more symmetric keys per Track, each identified by a `KeyID`.
+share one or more symmetric keys per Track, each identified by a `Key ID`.
 Key distribution and key negotiation are out of scope for this document
 (e.g., MLS could be used).
 
