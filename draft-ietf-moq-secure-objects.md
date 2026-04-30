@@ -647,7 +647,7 @@ before processing or validation can commence, delaying access to all
 contained data until transfer completion.
 
 This specification does not provide security for Track Extensions.
-If an application needs end to end security for track associated data,
+If an application needs end-to-end security for track associated data,
 the application SHOULD send that data as an Object Extension in the
 first object of each group.
 
