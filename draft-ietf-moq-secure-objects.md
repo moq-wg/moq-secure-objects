@@ -651,7 +651,7 @@ contained data until transfer completion.
 
 ## Threat Model
 
-MoQT Objects are published by Original Publishers and delivered to End
+MOQT Objects are published by Original Publishers and delivered to End
 Subscribers, potentially through one or more Relays. Each MoQT connection
 is protected hop by hop using TLS. Security on cross Relay links is
 outside the scope of MoQT, but this specification assumes protection
