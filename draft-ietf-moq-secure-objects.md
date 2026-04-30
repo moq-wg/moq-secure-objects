@@ -647,7 +647,25 @@ before processing or validation can commence, delaying access to all
 contained data until transfer completion.
 
 
+
 # Security Considerations {#security}
+
+
+TODO - Make sure this goes at end of threat model
+
+Further complexity in the threat model arises from Relay fan out.
+A Relay network can forward Objects on a given Track to many downstream End Subscribers.
+In high rate applications such as video, the number of Objects delivered per second can be large, and the number of downscale subscribers can be large.
+A malicious Relay can exploit this scale by attempting different forgeries for different downstream End Subscribers on a subset of Objects.
+
+In some applications, a Relay could send a forged packet using a trial key.
+If the forgery was accepted, the forged packet would cause the End Subscriber to take an action observable by the Relay, such as closing the connection.
+This would allow the Relay to determine that the forgery succeeded, and therefore learn that the trial key was valid for the Track.
+
+This type of attack should be considered when selecting an appropriate cryptographic key length for an application.
+One possible mitigation is for the application to track a metric of the rate of authentication failures across all End Subscribers for each Track.
+
+TODO - end of black that goes at end of threat model
 
 The cryptographic computations described in this document are exactly
 those performed in the SFrame encryption scheme defined in {{SFRAME}},
