@@ -646,10 +646,10 @@ encapsulating 6 seconds of video), the entire segment must be received
 before processing or validation can commence, delaying access to all
 contained data until transfer completion.
 
-This specification does not provide security for Track Extensions.
-If an application needs end-to-end security for track associated data,
-the application SHOULD send that data as an Object Extension in the
-first object of each group.
+This specification does not provide security for Track Properties.
+If an application needs end-to-end authentication for track associated data,
+the application SHOULD send that data in the Immutable Properties
+of the first object in each group.
 
 
 # Security Considerations {#security}
