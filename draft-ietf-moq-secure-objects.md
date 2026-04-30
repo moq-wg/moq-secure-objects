@@ -103,7 +103,7 @@ SFrame are not transmitted.
 
 The encryption mechanism defined in this specification can only be used
 in application context where object ID values are never more than 32
-bits long.
+bits long. This limitation is described in {{nonce}}.
 
 ## Terminology
 
@@ -494,6 +494,11 @@ the Group ID as 64 bit integer and Object ID as 32 bit integer. This
 encryption/decryption will fail if applied to an object where group ID
 is larger than 2<sup>64</sup> or the object ID is larger than
 2<sup>32</sup> and the MoQT Object MUST NOT be processed further.
+
+MoQT supports object IDs larger than 32 bits. However, for common AEAD ciphers such as AES-GCM, performance is better when the nonce is 96 bits. For MoQT’s primary use cases, applications can typically design their track, group, and object structure so that object IDs do not need to exceed 32 bits, making this a reasonable performance tradeoff.
+
+The group ID and object ID could both have been limited to, for example, 48 bits each. However, because 32 bit object IDs were large enough for the identified use cases, the Object ID field was left at 64 bits.
+
 
 ## Key and Salt Derivation {#keys}
 
