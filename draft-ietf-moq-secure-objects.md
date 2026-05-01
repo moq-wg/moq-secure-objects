@@ -682,8 +682,8 @@ This specification enables an End Subscriber to:
 2. detect delivery of an Object under the wrong Track Name or with a
    modified `Key ID`;
 
-3. encrypt the Original Payload and Encrypted Properties so Relays cannot
-   learn their contents; and
+3. verify that the Original Payload and Encrypted Properties remained
+   confidential from Relays; and
 
 4. detect some (but not all) Object drops or replays in limited cases (see
    {{deletion-detection}}).
