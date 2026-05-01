@@ -791,7 +791,9 @@ forgery succeeded, and therefore learn that the trial key was valid for
 the Track.
 
 This type of attack should be considered when selecting an appropriate
-cryptographic key length for an application.
+cryptographic key length for an application. If an applications can fan
+out to 2^x clients and send 2^y message over a reasonable time period, a
+key roughly (x+y) bits longer SHOULD be used.
 
 One possible mitigation is for the application to track a metric of the
 rate of authentication failures across all End Subscribers for each
