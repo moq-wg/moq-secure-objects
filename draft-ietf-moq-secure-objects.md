@@ -725,6 +725,56 @@ of the first object in each group.
 
 # Security Considerations {#security}
 
+## Threat Model
+
+MoQT Objects are published by Original Publishers and delivered to End
+Subscribers, potentially through one or more Relays. Each MoQT connection
+is protected hop by hop using TLS. Security on cross Relay links is
+outside the scope of MoQT, but this specification assumes protection
+equivalent to TLS on those links.
+
+Because security is hop by hop, each Relay terminates a security
+association and can observe, modify, drop, delay, reorder, or replay MoQT
+data. Some message fields are expected to be modified by Relays during
+normal operation, while other fields are expected to be visible but
+immutable. See {{MoQ-TRANSPORT}} for details.
+
+This specification assumes that the Original Publisher and End Subscriber
+share one or more symmetric keys per Track, each identified by a `Key ID`.
+Key distribution and key negotiation are out of scope for this document
+(e.g., MLS could be used).
+
+In MoQT, sending multiple Objects with the same Track, Group ID, and Object
+ID but different values is a Malformed Track Error. This specification
+therefore assumes the Original Publisher does not publish modified
+versions of the same Object.
+
+This specification enables an End Subscriber to:
+
+1. detect Relay modification of an Object's Original Payload, Encrypted
+   Properties, Immutable Properties, Publisher Priority, Group ID, or
+   Object ID;
+
+2. detect delivery of an Object under the wrong Track Name or with a
+   modified `Key ID`;
+
+3. verify that the Original Payload and Encrypted Properties remained
+   confidential from Relays; and
+
+4. detect some (but not all) Object drops or replays in limited cases (see
+   {{deletion-detection}}).
+
+This specification does **not** enable an End Subscriber to reliably detect:
+
+* complete suppression of all Objects by a Relay;
+
+* all replay attacks;
+
+* Relay-induced delay or reordering of Objects.
+
+
+## Cryptographic Design
+
 The cryptographic computations described in this document are exactly
 those performed in the SFrame encryption scheme defined in {{SFRAME}},
 The scheme in this document is effectively a "virtualized" version of
