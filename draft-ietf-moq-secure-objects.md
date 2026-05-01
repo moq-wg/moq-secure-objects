@@ -773,6 +773,33 @@ This specification does **not** enable an End Subscriber to reliably detect:
 * Relay-induced delay or reordering of Objects.
 
 
+### Fan Out Attacks
+
+Further complexity in the threat model arises from Relay fan out.  A
+Relay network can forward Objects on a given Track to many downstream
+End Subscribers.  In high rate applications such as video, the number of
+Objects delivered per second can be large, and the number of downscale
+subscribers can be large.  A malicious Relay can exploit this scale by
+attempting different forgeries for different downstream End Subscribers
+on a subset of Objects.
+
+In some applications, a Relay could send a forged packet using a trial
+key.  If the forgery was accepted, the forged packet would cause the End
+Subscriber to take an action observable by the Relay, such as closing
+the connection.  This would allow the Relay to determine that the
+forgery succeeded, and therefore learn that the trial key was valid for
+the Track.
+
+This type of attack should be considered when selecting an appropriate
+cryptographic key length for an application. If an applications can fan
+out to 2^x clients and send 2^y message over a reasonable time period, a
+key roughly (x+y) bits longer SHOULD be used.
+
+One possible mitigation is for the application to track a metric of the
+rate of authentication failures across all End Subscribers for each
+Track.
+
+
 ## Cryptographic Design
 
 The cryptographic computations described in this document are exactly
