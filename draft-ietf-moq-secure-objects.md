@@ -642,6 +642,71 @@ Encrypted Properties List {
 }
 ~~~
 
+## Padding Property {#padding-ext}
+
+The Padding Property (Property Type 0x32) allows the Original Publisher
+to pad the encrypted payload to a specific byte boundary. This can help
+mitigate traffic analysis attacks by obscuring the actual size of the
+object payload.
+
+~~~
+Padding Property {
+  Type (0x32),
+  Length (i),
+  Padding (...)
+}
+~~~
+
+The Padding field contains `Length` bytes, all of which MUST be set to
+zero (0x00). Receivers MUST ignore the contents of the Padding field.
+
+This property is included within the Encrypted Properties List, ensuring
+that the padding bytes are encrypted along with the object payload and
+other encrypted properties. The Padding Property MUST be the last
+property in the Encrypted Properties List if present.
+
+### Choosing the Padding Boundary
+
+Publishers SHOULD choose N as the smallest power of 2 that is greater
+than or equal to the unpadded ciphertext length. For example, if the
+unpadded ciphertext would be 100 bytes, N should be 128 (2^7).
+
+Publishers MAY use a larger power of 2 than the minimum required when
+additional obfuscation is desired. For instance, a publisher might
+always pad to at least 256 bytes, or use a fixed boundary across all
+objects in a track to prevent size-based correlation.
+
+Common boundary values include 64, 128, 256, 512, and 1024 bytes.
+The choice depends on the publisher's threat model and acceptable
+bandwidth overhead.
+
+### Padding to Byte Boundary
+
+To pad the ciphertext to an N-byte boundary, the publisher performs
+the following steps:
+
+1. Compute the base plaintext length: the varint-encoded length of
+   `original_payload`, the payload bytes themselves, and any serialized
+   Encrypted Properties (excluding padding).
+
+2. Compute the expected ciphertext length by adding the AEAD
+   authentication tag length (`AEAD.Nt`) to the base plaintext length.
+
+3. If the expected ciphertext length is already aligned to the desired
+   boundary, no padding is needed.
+
+4. Otherwise, calculate the number of bytes needed to reach the next
+   boundary. This target must account for the Padding Property overhead:
+   one byte for the type (0x32) plus the varint-encoded length field.
+   The padding length is chosen such that the total addition (type byte,
+   length varint, and padding bytes) equals the bytes needed to align.
+
+5. Append the Padding Property with the computed number of zero bytes to
+   the Encrypted Properties List.
+
+6. Serialize and encrypt the complete plaintext. The resulting
+   ciphertext length will be aligned to the specified boundary.
+
 # Usage Considerations
 
 To implement the protection mechanisms specified herein, a secure object
@@ -820,6 +885,7 @@ This document defines new MoQT Object properties under the
 | ---- | ---------------------------------------------------- |
 | 0x2  | Secure Object Key ID - see {{keyid-ext}}             |
 | 0xA  | Encrypted Properties List - see {{pvt-ext}}          |
+| 0x32 | Padding - see {{padding-ext}}                        |
 
 Note: The Encrypted Properties List type (0xA) appears only within the
 encrypted payload structure defined in {{app}}, not as a regular MoQT
