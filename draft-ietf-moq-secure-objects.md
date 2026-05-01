@@ -469,7 +469,7 @@ structure captures the input to the AEAD function's AAD argument:
 SECURE_OBJECT_AAD {
     Key ID (64),
     Group ID (64),
-    Object ID (64),
+    Object ID (32),
     Track Namespace (..),
     Track Name Length (i),
     Track Name (..),
