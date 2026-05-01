@@ -659,10 +659,25 @@ that the padding bytes are encrypted along with the object payload and
 other encrypted properties. The Padding Property MUST be the last
 property in the Encrypted Properties List if present.
 
+### Choosing the Padding Boundary
+
+Publishers SHOULD choose N as the smallest power of 2 that is greater
+than or equal to the unpadded ciphertext length. For example, if the
+unpadded ciphertext would be 100 bytes, N should be 128 (2^7).
+
+Publishers MAY use a larger power of 2 than the minimum required when
+additional obfuscation is desired. For instance, a publisher might
+always pad to at least 256 bytes, or use a fixed boundary across all
+objects in a track to prevent size-based correlation.
+
+Common boundary values include 64, 128, 256, 512, and 1024 bytes.
+The choice depends on the publisher's threat model and acceptable
+bandwidth overhead.
+
 ### Padding to Byte Boundary
 
-To pad the ciphertext to an N-byte boundary (e.g., 64 bytes), the
-publisher performs the following steps:
+To pad the ciphertext to an N-byte boundary, the publisher performs
+the following steps:
 
 1. Compute the base plaintext length: the varint-encoded length of
    `original_payload`, the payload bytes themselves, and any serialized
@@ -685,23 +700,6 @@ publisher performs the following steps:
 
 6. Serialize and encrypt the complete plaintext. The resulting
    ciphertext length will be aligned to the specified boundary.
-
-### Parsing Padding on Decryption
-
-When parsing the Encrypted Properties List after decryption, for each
-property:
-
-1. Read the property type (varint).
-
-2. Read the property length (varint).
-
-3. Read that many bytes as the property value.
-
-4. If the property type is 0x32 (Padding), discard the property value
-   and continue parsing. The padding does not affect the
-   `original_payload` or other properties.
-
-5. For other property types, process according to their definitions.
 
 # Usage Considerations
 
