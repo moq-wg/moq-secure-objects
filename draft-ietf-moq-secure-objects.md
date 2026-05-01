@@ -468,30 +468,22 @@ structure captures the input to the AEAD function's AAD argument:
 
 ~~~  pseudocode
 SECURE_OBJECT_AAD {
-    Key ID (64),
     Group ID (64),
     Object ID (32),
     Publisher Priority (8),
-    Track Namespace (..),
-    Track Name Length (i),
-    Track Name (..),
     Serialized Immutable Properties (..)
 }
 ~~~
 
-The Key ID, Group ID, and Object ID fields are encoded as 64-bit unsigned
-integers in big-endian (network) byte order. This fixed-width encoding
-ensures that both sender and receiver construct identical AAD values
+The Group ID and Object ID fields are encoded as 64-bit and 32-bit unsigned
+integers respectively in big-endian (network) byte order. This fixed-width
+encoding ensures that both sender and receiver construct identical AAD values
 without ambiguity, as variable-length integer encodings permit multiple
 valid representations of the same value.
 
-Open Issue: We need to sort out of we can remove most the things from
-SECURE_OBJECT_AAD because they are already bound to the keys.
-
-* Track Namespace is serialized as in section 2.4.1 of MoQT.
-
 Serialized Immutable Properties MUST include the `Secure Object Key ID`
-property containing the Key ID.
+property containing the Key ID. This serves as the semantic equivalent
+of the KID field in SFrame.
 
 ## Nonce Formation {#nonce}
 
@@ -670,13 +662,17 @@ SFrame:
   SFrame Header), but constructed locally by the encrypting and
   decrypting endpoints.
 
-* The format of the AAD is different:
+* The format of the AAD is different but contains the same semantic
+  information:
+
+    * The Group ID and Object ID are combined to form what is the CTR
+      in SFrame.
+
+    * The Key ID (KID) is contained in the Serialized Immutable
+      Properties rather than a separate header field.
 
     * The SFrame Header is constructed using MoQT-style varints, instead
       of the variable-length integer scheme defined in SFrame.
-
-    * The GroupID and GroupID are sent directly, not as the packed CTR
-      value.
 
 * The `metadata` input in to SFrame operations is defined to be the
   FullTrackName value for the object.
