@@ -315,9 +315,9 @@ The detailed encryption process is shown below:
           +-----------------------------------------------------------+
                                                                       |
 +----------------+           +-------------------------------+        |
-| track_base_key |           | Key ID, Group ID, Object ID,  |        |
-| (per Key ID)   |           | Track Namespace, Track Name,  |        |
-+-------+--------+           | Serialized Immutable Ext.     |        |
+| track_base_key |           | Group ID, Object ID,          |        |
+| (per Key ID)   |           | Publisher Priority,           |        |
++-------+--------+           | Serialized Immutable Ext[ Key ID ]     |
         |                    +-------+-----------------------+        |
         v                            |                                |
 +-------+--------+                   +------------+-----------+       |
@@ -388,9 +388,9 @@ The detailed decryption process is shown below:
                        +----------------------------------------------+
                                                                       |
 +----------------+           +-------------------------------+        |
-| track_base_key |           | Key ID, Group ID, Object ID,  |        |
-| (per Key ID)   |           | Track Namespace, Track Name,  |        |
-+-------+--------+           | Serialized Immutable Ext.     |        |
+| track_base_key |           | Group ID, Object ID,          |        |
+| (per Key ID)   |           | Publisher Priority,           |        |
++-------+--------+           | Serialized Immutable Ext[ Key ID ]     |
         |                    +-------+-----------------------+        |
         v                            |                                |
 +-------+--------+                   +------------------------+       |
