@@ -1037,3 +1037,329 @@ Implementations SHOULD support `AES_128_CTR_HMAC_SHA256_80` (0x0001).
 Thanks to Alan Frindell for providing text on adding encrypted
 properties. Thank you to Magnus Westerlund for doing a thorough
 security review.
+
+# Test Vectors {#test-vectors}
+
+This appendix provides test vectors for verifying implementations of the
+MOQ Secure Objects encryption scheme. The vectors are presented in JSON
+format with hex-encoded byte strings and integer numeric values.
+Whitespace in the JSON is not significant.
+
+These vectors are deterministic and can be reproduced from the reference
+implementation by running `cargo run --bin generate-test-vectors`.
+
+The JSON structure has four top-level keys corresponding to four test
+categories:
+
+~~~json
+{
+  "full_track_name": [...],
+  "key_derivation": [...],
+  "nonce_aad": [...],
+  "encryption": [...]
+}
+~~~
+
+## Full Track Name Serialization
+
+Each entry tests serialization of Track Namespace tuples and Track Name
+into the Serialized Full Track Name byte string.
+
+~~~json
+[
+  {
+    "namespace_tuples": ["example.com"],
+    "track_name": "audio",
+    "serialized_full_track_name":
+      "010b6578616d706c652e636f6d05617564696f"
+  },
+  {
+    "namespace_tuples": ["example.com", "meeting-123"],
+    "track_name": "video",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f"
+  },
+  {
+    "namespace_tuples": ["example.com", "meeting-123", "floor-1"],
+    "track_name": "slides",
+    "serialized_full_track_name":
+      "030b6578616d706c652e636f6d0b6d656574696e672d31323307666c6f6f722d3106736c69646573"
+  }
+]
+~~~
+
+## Key Derivation
+
+Each entry tests HKDF-Extract and HKDF-Expand for deriving `moq_key`
+and `moq_salt` from the `track_base_key`. The `track_base_key` values
+are ASCII strings: "sixteen byte key" (16 bytes) for SHA-256 suites and
+"a]256-bit-base-key-for-test!!!!!" (32 bytes) for SHA-512 suites.
+Intermediate values (`moq_secret`, `moq_key_label`, `moq_salt_label`)
+are included to aid debugging.
+
+~~~json
+[
+  {
+    "cipher_suite": 1,
+    "key_id": 7,
+    "track_base_key": "7369787465656e2062797465206b6579",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "moq_secret":
+      "e5e76a372058231c56eedca06436c94e6f6bab38d759687367c92048faf93f18",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00010000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00010000000000000007",
+    "moq_key":
+      "36543f1f0d00ea1c6ecacaab3ec878772ef6e4bf7e91f29a1fa99af410802420fa92560c1850654f5ae7fa0281d3d1d9",
+    "moq_salt": "e905de3e41c5feb642a8ea58"
+  },
+  {
+    "cipher_suite": 2,
+    "key_id": 7,
+    "track_base_key": "7369787465656e2062797465206b6579",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "moq_secret":
+      "e5e76a372058231c56eedca06436c94e6f6bab38d759687367c92048faf93f18",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00020000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00020000000000000007",
+    "moq_key":
+      "12acb1032ea6b0c8ee2c1f9cfe052f0d13220782a559c50e669645951bb15ed1c93ae2ff02b411649e0aa99aec19b865",
+    "moq_salt": "17efc7dfcc10786fa00771b8"
+  },
+  {
+    "cipher_suite": 4,
+    "key_id": 7,
+    "track_base_key": "7369787465656e2062797465206b6579",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "moq_secret":
+      "e5e76a372058231c56eedca06436c94e6f6bab38d759687367c92048faf93f18",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00040000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00040000000000000007",
+    "moq_key": "eb3b95606d7c4775688c121e8f06832c",
+    "moq_salt": "dc11a8d516c299f44b24be8d"
+  },
+  {
+    "cipher_suite": 5,
+    "key_id": 7,
+    "track_base_key":
+      "615d3235362d6269742d626173652d6b65792d666f722d746573742121212121",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "moq_secret":
+      "f633519ec99705bae4bcc7fe0f88ccd3c0301355d97d2265773d8b80ccf23ca39d500bc2d5399315bf78bfc5ed69f8be7b6799cfb35691ffe2db6126ab9e897d",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00050000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00050000000000000007",
+    "moq_key":
+      "03a7b0a238bde6d398c0c8de14538c31c8f84a4356a01f5ca00d9a46d4046953",
+    "moq_salt": "2c82451648c8d25e94b8dbdc"
+  }
+]
+~~~
+
+## Nonce and AAD Formation
+
+Each entry tests CTR construction from Group ID and Object ID, nonce
+formation by XOR with salt, and SECURE_OBJECT_AAD serialization. All
+entries use AES_128_GCM_SHA256_128 (cipher suite 0x0004) with Key ID 7.
+
+~~~json
+[
+  {
+    "group_id": 0,
+    "object_id": 0,
+    "publisher_priority": 0,
+    "key_id": 7,
+    "serialized_immutable_properties": "",
+    "moq_salt": "dc11a8d516c299f44b24be8d",
+    "ctr": "000000000000000000000000",
+    "nonce": "dc11a8d516c299f44b24be8d",
+    "aad": "0000000000000000000000000000020107"
+  },
+  {
+    "group_id": 42,
+    "object_id": 1,
+    "publisher_priority": 128,
+    "key_id": 7,
+    "serialized_immutable_properties": "",
+    "moq_salt": "dc11a8d516c299f44b24be8d",
+    "ctr": "000000000000002a00000001",
+    "nonce": "dc11a8d516c299de4b24be8c",
+    "aad": "000000000000002a000000018000020107"
+  },
+  {
+    "group_id": 18446744073709551615,
+    "object_id": 4294967295,
+    "publisher_priority": 255,
+    "key_id": 7,
+    "serialized_immutable_properties": "",
+    "moq_salt": "dc11a8d516c299f44b24be8d",
+    "ctr": "ffffffffffffffffffffffff",
+    "nonce": "23ee572ae93d660bb4db4172",
+    "aad": "ffffffffffffffffffffffffff00020107"
+  }
+]
+~~~
+
+## Full Encryption
+
+Each entry tests the complete encryption pipeline including key
+derivation, nonce formation, AAD construction, and AEAD encryption. The
+`plaintext` field shows the serialized input to AEAD: `varint(payload_len)
+|| payload || encrypted_properties_list`. All entries include both
+immutable properties (which affect the AAD) and encrypted properties
+(which are encrypted with the payload).
+
+Common inputs (ASCII values shown for readability):
+
+* `track_base_key`: "sixteen byte key" (16B) or
+  "a]256-bit-base-key-for-test!!!!!" (32B)
+* `original_payload`: "hello from moq"
+* `immutable_properties`: property type 0x0004, value "relay-ok"
+* `encrypted_properties_list`: property type 0x0100, value "for-eyes-only"
+
+~~~json
+[
+  {
+    "cipher_suite": 1,
+    "key_id": 7,
+    "track_base_key": "7369787465656e2062797465206b6579",
+    "namespace_tuples": ["example.com", "meeting-123"],
+    "track_name": "video",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "group_id": 42,
+    "object_id": 1,
+    "publisher_priority": 128,
+    "immutable_properties": "00040872656c61792d6f6b",
+    "original_payload": "68656c6c6f2066726f6d206d6f71",
+    "encrypted_properties_list":
+      "000a1001000d666f722d657965732d6f6e6c79",
+    "plaintext":
+      "0e68656c6c6f2066726f6d206d6f71000a1001000d666f722d657965732d6f6e6c79",
+    "moq_secret":
+      "e5e76a372058231c56eedca06436c94e6f6bab38d759687367c92048faf93f18",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00010000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00010000000000000007",
+    "moq_key":
+      "36543f1f0d00ea1c6ecacaab3ec878772ef6e4bf7e91f29a1fa99af410802420fa92560c1850654f5ae7fa0281d3d1d9",
+    "moq_salt": "e905de3e41c5feb642a8ea58",
+    "ctr": "000000000000002a00000001",
+    "nonce": "e905de3e41c5fe9c42a8ea59",
+    "aad":
+      "000000000000002a00000001800002010700040872656c61792d6f6b",
+    "ciphertext":
+      "170654428664c29b3eab20a76e86ab2c2fc210b218b38eb556974021b7804b1d7ced925e33e3d6080e8157d4"
+  },
+  {
+    "cipher_suite": 2,
+    "key_id": 7,
+    "track_base_key": "7369787465656e2062797465206b6579",
+    "namespace_tuples": ["example.com", "meeting-123"],
+    "track_name": "video",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "group_id": 42,
+    "object_id": 1,
+    "publisher_priority": 128,
+    "immutable_properties": "00040872656c61792d6f6b",
+    "original_payload": "68656c6c6f2066726f6d206d6f71",
+    "encrypted_properties_list":
+      "000a1001000d666f722d657965732d6f6e6c79",
+    "plaintext":
+      "0e68656c6c6f2066726f6d206d6f71000a1001000d666f722d657965732d6f6e6c79",
+    "moq_secret":
+      "e5e76a372058231c56eedca06436c94e6f6bab38d759687367c92048faf93f18",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00020000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00020000000000000007",
+    "moq_key":
+      "12acb1032ea6b0c8ee2c1f9cfe052f0d13220782a559c50e669645951bb15ed1c93ae2ff02b411649e0aa99aec19b865",
+    "moq_salt": "17efc7dfcc10786fa00771b8",
+    "ctr": "000000000000002a00000001",
+    "nonce": "17efc7dfcc107845a00771b9",
+    "aad":
+      "000000000000002a00000001800002010700040872656c61792d6f6b",
+    "ciphertext":
+      "df0fd1431b6883bcb841fa14d4588630aaf11c92363b536ecc08273a27ac4f47bd72fca55f29cd1fad9b"
+  },
+  {
+    "cipher_suite": 4,
+    "key_id": 7,
+    "track_base_key": "7369787465656e2062797465206b6579",
+    "namespace_tuples": ["example.com", "meeting-123"],
+    "track_name": "video",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "group_id": 42,
+    "object_id": 1,
+    "publisher_priority": 128,
+    "immutable_properties": "00040872656c61792d6f6b",
+    "original_payload": "68656c6c6f2066726f6d206d6f71",
+    "encrypted_properties_list":
+      "000a1001000d666f722d657965732d6f6e6c79",
+    "plaintext":
+      "0e68656c6c6f2066726f6d206d6f71000a1001000d666f722d657965732d6f6e6c79",
+    "moq_secret":
+      "e5e76a372058231c56eedca06436c94e6f6bab38d759687367c92048faf93f18",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00040000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00040000000000000007",
+    "moq_key": "eb3b95606d7c4775688c121e8f06832c",
+    "moq_salt": "dc11a8d516c299f44b24be8d",
+    "ctr": "000000000000002a00000001",
+    "nonce": "dc11a8d516c299de4b24be8c",
+    "aad":
+      "000000000000002a00000001800002010700040872656c61792d6f6b",
+    "ciphertext":
+      "facafee5c450bd140759bdffa6eef6948ae6dbfdb7ba87cf3e161a641b27f952eb4f13b18e351d4e7e344675f0dc96e0cd5e"
+  },
+  {
+    "cipher_suite": 5,
+    "key_id": 7,
+    "track_base_key":
+      "615d3235362d6269742d626173652d6b65792d666f722d746573742121212121",
+    "namespace_tuples": ["example.com", "meeting-123"],
+    "track_name": "video",
+    "serialized_full_track_name":
+      "020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f",
+    "group_id": 42,
+    "object_id": 1,
+    "publisher_priority": 128,
+    "immutable_properties": "00040872656c61792d6f6b",
+    "original_payload": "68656c6c6f2066726f6d206d6f71",
+    "encrypted_properties_list":
+      "000a1001000d666f722d657965732d6f6e6c79",
+    "plaintext":
+      "0e68656c6c6f2066726f6d206d6f71000a1001000d666f722d657965732d6f6e6c79",
+    "moq_secret":
+      "f633519ec99705bae4bcc7fe0f88ccd3c0301355d97d2265773d8b80ccf23ca39d500bc2d5399315bf78bfc5ed69f8be7b6799cfb35691ffe2db6126ab9e897d",
+    "moq_key_label":
+      "4d4f5120312e3020536563757265204f626a6563747320536563726574206b657920020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00050000000000000007",
+    "moq_salt_label":
+      "4d4f5120312e30205365637265742073616c7420020b6578616d706c652e636f6d0b6d656574696e672d31323305766964656f00050000000000000007",
+    "moq_key":
+      "03a7b0a238bde6d398c0c8de14538c31c8f84a4356a01f5ca00d9a46d4046953",
+    "moq_salt": "2c82451648c8d25e94b8dbdc",
+    "ctr": "000000000000002a00000001",
+    "nonce": "2c82451648c8d27494b8dbdd",
+    "aad":
+      "000000000000002a00000001800002010700040872656c61792d6f6b",
+    "ciphertext":
+      "09399b821a1452a320a8bf927c004c71f8fd34449070f99746ff6ab0ef67a4f93b7f889e64d194a7b18a7a946184fed15386"
+  }
+]
+~~~
