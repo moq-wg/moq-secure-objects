@@ -1052,12 +1052,12 @@ The JSON structure has four top-level keys corresponding to four test
 categories:
 
 ~~~json
-{
+\{
   "full_track_name": [...],
   "key_derivation": [...],
   "nonce_aad": [...],
   "encryption": [...]
-}
+\}
 ~~~
 
 ## Full Track Name Serialization
