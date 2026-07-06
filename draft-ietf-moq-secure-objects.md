@@ -849,7 +849,7 @@ some safeguards that make it safer to use short tags, namely:
   a receiver can interpret a large deviation from this rate as a sign of
   an attack.
 
-* The the binding of the secure object payload to other MoQT parameters
+* The binding of the secure object payload to other MoQT parameters
   (as metadata), together with MoQT's uniqueness properties ensure that
   a valid secure object payload cannot be replayed in a different
   context.
