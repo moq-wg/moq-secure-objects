@@ -651,18 +651,17 @@ payload, helping mitigate traffic analysis attacks.
 ~~~
 Padding Property {
   Type (0x32),
-  Length (32),
+  Length (16),
   Padding (...)
 }
 ~~~
 
 Unlike other properties where the Length field uses the MOQ variable-
 length integer encoding, the Padding Property always encodes its Length
-as a 4-byte (32-bit) unsigned integer in network byte order. This fixed-
-size encoding simplifies processing: a receiver reads the 4-byte length
-and skips that many bytes to reach the next element.
+as a 2-byte (16-bit) unsigned integer in network byte order. This fixed-
+size encoding simplifies computing the amount of padding to add.
 
-The Padding field contains `Length` bytes, all of which MUST be set to
+The Padding field contains `Length` bytes, all of which SHOULD be set to
 zero (0x00). Receivers MUST ignore the contents of the Padding field.
 
 This property is included within the Encrypted Properties List, ensuring
@@ -751,8 +750,6 @@ This specification enables an End Subscriber to:
 This specification does **not** enable an End Subscriber to reliably detect:
 
 * complete suppression of all Objects by a Relay;
-
-* all replay attacks;
 
 * Relay-induced delay or reordering of Objects.
 
@@ -852,7 +849,7 @@ some safeguards that make it safer to use short tags, namely:
   a receiver can interpret a large deviation from this rate as a sign of
   an attack.
 
-* The the binding of the secure object payload to other MoQT parameters
+* The binding of the secure object payload to other MoQT parameters
   (as metadata), together with MoQT's uniqueness properties ensure that
   a valid secure object payload cannot be replayed in a different
   context.
