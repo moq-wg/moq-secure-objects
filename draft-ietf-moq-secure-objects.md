@@ -651,18 +651,17 @@ payload, helping mitigate traffic analysis attacks.
 ~~~
 Padding Property {
   Type (0x32),
-  Length (32),
+  Length (16),
   Padding (...)
 }
 ~~~
 
 Unlike other properties where the Length field uses the MOQ variable-
 length integer encoding, the Padding Property always encodes its Length
-as a 4-byte (32-bit) unsigned integer in network byte order. This fixed-
-size encoding simplifies processing: a receiver reads the 4-byte length
-and skips that many bytes to reach the next element.
+as a 2-byte (16-bit) unsigned integer in network byte order. This fixed-
+size encoding simplifies computing the amount of padding to add.
 
-The Padding field contains `Length` bytes, all of which MUST be set to
+The Padding field contains `Length` bytes, all of which SHOULD be set to
 zero (0x00). Receivers MUST ignore the contents of the Padding field.
 
 This property is included within the Encrypted Properties List, ensuring
