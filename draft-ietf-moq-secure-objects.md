@@ -114,10 +114,10 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 capitals, as shown here.
 
 E2EE:
-: End to End Encryption
+: End-to-End Encryption
 
 HBH:
-: Hop By Hop
+: Hop-by-Hop
 
 varint:
 : {{MoQ-TRANSPORT}} variable length integer (Section 1.4.1).
@@ -713,11 +713,11 @@ of the first object in each group.
 
 MoQT Objects are published by Original Publishers and delivered to End
 Subscribers, potentially through one or more Relays. Each MoQT connection
-is protected hop by hop using TLS. Security on cross Relay links is
+is protected hop-by-hop using TLS. Security on cross Relay links is
 outside the scope of MoQT, but this specification assumes protection
 equivalent to TLS on those links.
 
-Because security is hop by hop, each Relay terminates a security
+Because security is hop-by-hop, each Relay terminates a security
 association and can observe, modify, drop, delay, reorder, or replay MoQT
 data. Some message fields are expected to be modified by Relays during
 normal operation, while other fields are expected to be visible but
