@@ -751,8 +751,6 @@ This specification does **not** enable an End Subscriber to reliably detect:
 
 * complete suppression of all Objects by a Relay;
 
-* all replay attacks;
-
 * Relay-induced delay or reordering of Objects.
 
 
