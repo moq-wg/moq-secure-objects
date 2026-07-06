@@ -234,12 +234,12 @@ secrets and their lifetimes are established is outside the scope of this
 specification.  The application also defines which Key ID should be used
 for a given encryption operation. For decryption, the Key ID is obtained
 from the `Secure Object Key ID` property (that is contained within the
-immutable properties of the Object).
-The scope of a Key ID is the namespace so if two tracks inside the same
-namespace have different tracks_base_keys, then they need to have
-different Key ID values. This design is to support a single key across many
-tracks where a client uses subscribe namespace to get new tracks as they
-are created in the namespace.
+immutable properties of the Object).  The scope of a Key ID is the
+namespace so if two tracks inside the same namespace have different
+tracks_base_keys, then they need to have different Key ID values. This
+design is to support a single key across many tracks where a client uses
+subscribe namespace to get new tracks as they are created in the
+namespace.
 
 Applications determine the ciphersuite to be used for each track's
 encryption context.  See {{ciphersuite}} for the list of ciphersuites
@@ -457,11 +457,11 @@ below:
 
 ## Metadata Authentication {#aad}
 
-The Key ID, Full Track Name, Immutable Properties, Group ID, Object
-ID, and Publisher Priority for a given MoQT Object are authenticated as
-part of secure object encryption.  This ensures, for example, that
-encrypted objects cannot be replayed across tracks and that the
-publisher's intended priority cannot be modified without detection.
+The Key ID, Full Track Name, Immutable Properties, Group ID, Object ID,
+and Publisher Priority for a given MoQT Object are authenticated as part
+of secure object encryption.  This ensures, for example, that encrypted
+objects cannot be replayed across tracks and that the publisher's
+intended priority cannot be modified without detection.
 
 When protecting or unprotecting a secure object, the following data
 structure captures the input to the AEAD function's AAD argument:
@@ -475,11 +475,11 @@ SECURE_OBJECT_AAD {
 }
 ~~~
 
-The Group ID and Object ID fields are encoded as 64-bit and 32-bit unsigned
-integers respectively in big-endian (network) byte order. This fixed-width
-encoding ensures that both sender and receiver construct identical AAD values
-without ambiguity, as variable-length integer encodings permit multiple
-valid representations of the same value.
+The Group ID and Object ID fields are encoded as 64-bit and 32-bit
+unsigned integers respectively in big-endian (network) byte order. This
+fixed-width encoding ensures that both sender and receiver construct
+identical AAD values without ambiguity, as variable-length integer
+encodings permit multiple valid representations of the same value.
 
 Serialized Immutable Properties MUST include the `Secure Object Key ID`
 property containing the Key ID. This serves as the semantic equivalent
@@ -488,17 +488,23 @@ of the KID field in SFrame.
 ## Nonce Formation {#nonce}
 
 The Group ID and Object ID for an object are used to form a 96-bit
-counter (CTR) value, which is XORed with a salt to form the nonce used in
-AEAD encryption. The counter value is formed by encoding the Group ID as
-a 64-bit big-endian unsigned integer, followed by the Object ID encoded
-as a 32-bit big-endian unsigned integer. This encryption/decryption will
-fail if applied to an object where group ID is larger than 2^64-1 or the
-object ID is larger than 2^32-1 and the MoQT Object MUST NOT be processed
-further.
+counter (CTR) value, which is XORed with a salt to form the nonce used
+in AEAD encryption. The counter value is formed by encoding the Group ID
+as a 64-bit big-endian unsigned integer, followed by the Object ID
+encoded as a 32-bit big-endian unsigned integer. This
+encryption/decryption will fail if applied to an object where group ID
+is larger than 2^64-1 or the object ID is larger than 2^32-1 and the
+MoQT Object MUST NOT be processed further.
 
-MOQT supports Object IDs larger than 32 bits. However, for common AEAD ciphers such as AES-GCM, performance is better when the nonce is 96 bits. For MOQT’s primary use cases, applications can typically design their track, group, and object structure so that Object IDs do not need to exceed 32 bits, making this a reasonable performance tradeoff.
+MOQT supports Object IDs larger than 32 bits. However, for common AEAD
+ciphers such as AES-GCM, performance is better when the nonce is 96
+bits. For MOQT’s primary use cases, applications can typically design
+their track, group, and object structure so that Object IDs do not need
+to exceed 32 bits, making this a reasonable performance tradeoff.
 
-The Group ID and Object ID could both have been limited to, for example, 48 bits each. However, because 32 bit Object IDs were large enough for the identified use cases, the Object ID field was left at 32 bits.
+The Group ID and Object ID could both have been limited to, for example,
+48 bits each. However, because 32 bit Object IDs were large enough for
+the identified use cases, the Object ID field was left at 32 bits.
 
 
 ## Key and Salt Derivation {#keys}
@@ -700,9 +706,9 @@ encapsulating 6 seconds of video), the entire segment must be received
 before processing or validation can commence, delaying access to all
 contained data until transfer completion.
 
-This specification does not provide security for Track Properties.
-If an application needs end-to-end authentication for track associated data,
-the application SHOULD send that data in the Immutable Properties
+This specification does not provide security for Track Properties.  If
+an application needs end-to-end authentication for track associated
+data, the application SHOULD send that data in the Immutable Properties
 of the first object in each group.
 
 
@@ -717,20 +723,20 @@ outside the scope of MoQT, but this specification assumes protection
 equivalent to TLS on those links.
 
 Because security is hop-by-hop, each Relay terminates a security
-association and can observe, modify, drop, delay, reorder, or replay MoQT
-data. Some message fields are expected to be modified by Relays during
-normal operation, while other fields are expected to be visible but
-immutable. See {{MoQ-TRANSPORT}} for details.
+association and can observe, modify, drop, delay, reorder, or replay
+MoQT data. Some message fields are expected to be modified by Relays
+during normal operation, while other fields are expected to be visible
+but immutable. See {{MoQ-TRANSPORT}} for details.
 
-This specification assumes that the Original Publisher and End Subscriber
-share one or more symmetric keys per Track, each identified by a `Key ID`.
-Key distribution and key negotiation are out of scope for this document
-(e.g., MLS could be used).
+This specification assumes that the Original Publisher and End
+Subscriber share one or more symmetric keys per Track, each identified
+by a `Key ID`.  Key distribution and key negotiation are out of scope
+for this document (e.g., MLS could be used).
 
-In MoQT, sending multiple Objects with the same Track, Group ID, and Object
-ID but different values is a Malformed Track Error. This specification
-therefore assumes the Original Publisher does not publish modified
-versions of the same Object.
+In MoQT, sending multiple Objects with the same Track, Group ID, and
+Object ID but different values is a Malformed Track Error. This
+specification therefore assumes the Original Publisher does not publish
+modified versions of the same Object.
 
 This specification enables an End Subscriber to:
 
@@ -747,7 +753,8 @@ This specification enables an End Subscriber to:
 4. detect some (but not all) Object drops or replays in limited cases (see
    {{deletion-detection}}).
 
-This specification does **not** enable an End Subscriber to reliably detect:
+This specification does **not** enable an End Subscriber to reliably
+detect:
 
 * complete suppression of all Objects by a Relay;
 
@@ -1195,10 +1202,10 @@ entries use AES_128_GCM_SHA256_128 (cipher suite 0x0004) with Key ID 7.
 
 Each entry tests the complete encryption pipeline including key
 derivation, nonce formation, AAD construction, and AEAD encryption. The
-`plaintext` field shows the serialized input to AEAD: `varint(payload_len)
-|| payload || encrypted_properties_list`. All entries include both
-immutable properties (which affect the AAD) and encrypted properties
-(which are encrypted with the payload).
+`plaintext` field shows the serialized input to AEAD:
+`varint(payload_len) || payload || encrypted_properties_list`. All
+entries include both immutable properties (which affect the AAD) and
+encrypted properties (which are encrypted with the payload).
 
 Common inputs (ASCII values shown for readability):
 
