@@ -645,17 +645,22 @@ Encrypted Properties List {
 ## Padding Property {#padding-ext}
 
 The Padding Property (Property Type 0x32) allows the Original Publisher
-to pad the encrypted payload to a specific byte boundary. This can help
-mitigate traffic analysis attacks by obscuring the actual size of the
-object payload.
+to pad the encrypted payload to obscure the actual size of the object
+payload, helping mitigate traffic analysis attacks.
 
 ~~~
 Padding Property {
   Type (0x32),
-  Length (i),
+  Length (32),
   Padding (...)
 }
 ~~~
+
+Unlike other properties where the Length field uses the MOQ variable-
+length integer encoding, the Padding Property always encodes its Length
+as a 4-byte (32-bit) unsigned integer in network byte order. This fixed-
+size encoding simplifies processing: a receiver reads the 4-byte length
+and skips that many bytes to reach the next element.
 
 The Padding field contains `Length` bytes, all of which MUST be set to
 zero (0x00). Receivers MUST ignore the contents of the Padding field.
@@ -665,47 +670,26 @@ that the padding bytes are encrypted along with the object payload and
 other encrypted properties. The Padding Property MUST be the last
 property in the Encrypted Properties List if present.
 
-### Choosing the Padding Boundary
+### Processing
 
-Publishers SHOULD choose N as the smallest power of 2 that is greater
-than or equal to the unpadded ciphertext length. For example, if the
-unpadded ciphertext would be 100 bytes, N should be 128 (2^7).
+To add padding, the publisher:
 
-Publishers MAY use a larger power of 2 than the minimum required when
-additional obfuscation is desired. For instance, a publisher might
-always pad to at least 256 bytes, or use a fixed boundary across all
-objects in a track to prevent size-based correlation.
+1. Determines the desired padding size based on its traffic analysis
+   threat model.
 
-Common boundary values include 64, 128, 256, 512, and 1024 bytes.
-The choice depends on the publisher's threat model and acceptable
-bandwidth overhead.
+2. Encodes the padding length as a 4-byte unsigned integer in network
+   byte order.
 
-### Padding to Byte Boundary
+3. Appends that many zero bytes as the Padding field.
 
-To pad the ciphertext to an N-byte boundary, the publisher performs
-the following steps:
+To skip padding, the receiver:
 
-1. Compute the base plaintext length: the varint-encoded length of
-   `original_payload`, the payload bytes themselves, and any serialized
-   Encrypted Properties (excluding padding).
+1. Reads the 1-byte type field (0x32).
 
-2. Compute the expected ciphertext length by adding the AEAD
-   authentication tag length (`AEAD.Nt`) to the base plaintext length.
+2. Reads the next 4 bytes as the padding length.
 
-3. If the expected ciphertext length is already aligned to the desired
-   boundary, no padding is needed.
-
-4. Otherwise, calculate the number of bytes needed to reach the next
-   boundary. This target must account for the Padding Property overhead:
-   one byte for the type (0x32) plus the varint-encoded length field.
-   The padding length is chosen such that the total addition (type byte,
-   length varint, and padding bytes) equals the bytes needed to align.
-
-5. Append the Padding Property with the computed number of zero bytes to
-   the Encrypted Properties List.
-
-6. Serialize and encrypt the complete plaintext. The resulting
-   ciphertext length will be aligned to the specified boundary.
+3. Skips the indicated number of bytes to reach the payload or next
+   property.
 
 # Usage Considerations
 
