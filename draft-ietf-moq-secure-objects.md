@@ -103,7 +103,8 @@ SFrame are not transmitted.
 
 The encryption mechanism defined in this specification can only be used
 in application context where object ID values are never more than 32
-bits long. This limitation is described in {{nonce}}.
+bits long or are constrained in other specific ways.
+This limitation is described in {{nonce}}.
 
 ## Terminology
 
@@ -302,6 +303,8 @@ The resulting ciphertext replaces the `original_payload` as the MoQT
 Object Payload. The ciphertext length reflects the encrypted
 `original_payload` plus any Encrypted Properties List plus the AEAD
 authentication tag.
+XOID is formed by taking the XOR of the high and low 32 bits of the
+Object ID
 
 The detailed encryption process is shown below:
 
@@ -314,18 +317,18 @@ The detailed encryption process is shown below:
           v                        v
           +-----------------------------------------------------------+
                                                                       |
-+----------------+           +-------------------------------+        |
-| track_base_key |           | Group ID, Object ID,          |        |
-| (per Key ID)   |           | Publisher Priority,           |        |
-+-------+--------+           | Serialized Immutable Ext[ Key ID ]     |
-        |                    +-------+-----------------------+        |
++----------------+           +----------------------------------+     |
+| track_base_key |           | Group ID, Object ID,             |     |
+| (per Key ID)   |           | Publisher Priority,              |     |
++-------+--------+           | Serialized Immutable Ext[Key ID] |     |
+        |                    +-------+--------------------------+     |
         v                            |                                |
 +-------+--------+                   +------------+-----------+       |
 | Key Derivation |                   |                        |       |
 | (HKDF)         |                   v                        v       |
-+---+---------+--+              +------------------------+  +-----+   |
-    |         |                 | CTR = GID(64)||OID(32) |  | AAD |   |
-    |         |                 +----+-------------------+  +-----+   |
++---+---------+--+           +-------------------------+   +-----+    |
+    |         |              | CTR = GID(64)||XOID(32) |   | AAD |    |
+    |         |              +----+--------------------+   +-----+    |
     |         |                      |                        |       |
     |        salt                    |                        |       |
     |         |                      v                        |       |
@@ -387,18 +390,18 @@ The detailed decryption process is shown below:
                        |
                        +----------------------------------------------+
                                                                       |
-+----------------+           +-------------------------------+        |
-| track_base_key |           | Group ID, Object ID,          |        |
-| (per Key ID)   |           | Publisher Priority,           |        |
-+-------+--------+           | Serialized Immutable Ext[ Key ID ]     |
-        |                    +-------+-----------------------+        |
++----------------+           +----------------------------------+     |
+| track_base_key |           | Group ID, Object ID,             |     |
+| (per Key ID)   |           | Publisher Priority,              |     |
++-------+--------+           | Serialized Immutable Ext[Key ID] |     |
+        |                    +-------+--------------------------+     |
         v                            |                                |
 +-------+--------+                   +------------------------+       |
 | Key Derivation |                   |                        |       |
 | (HKDF)         |                   v                        v       |
-+---+------------+              +------------------------+  +-----+   |
-    |         |                 | CTR = GID(64)||OID(32) |  | AAD |   |
-    |         |                 +----+-------------------+  +-----+   |
++---+------------+           +-------------------------+    +-----+   |
+    |         |              | CTR = GID(64)||XOID(32) |    | AAD |   |
+    |         |              +----+--------------------+    +-----+   |
     |         |                      |                        |       |
     |       salt                     |                        |       |
     |         |                      v                        |       |
@@ -469,14 +472,14 @@ structure captures the input to the AEAD function's AAD argument:
 ~~~  pseudocode
 SECURE_OBJECT_AAD {
     Group ID (64),
-    Object ID (32),
+    Object ID (64),
     Publisher Priority (8),
     Serialized Immutable Properties (..)
 }
 ~~~
 
-The Group ID and Object ID fields are encoded as 64-bit and 32-bit
-unsigned integers respectively in big-endian (network) byte order. This
+The Group ID and Object ID fields are encoded as 64-bit
+unsigned integers in big-endian (network) byte order. This
 fixed-width encoding ensures that both sender and receiver construct
 identical AAD values without ambiguity, as variable-length integer
 encodings permit multiple valid representations of the same value.
@@ -491,9 +494,10 @@ The Group ID and Object ID for an object are used to form a 96-bit
 counter (CTR) value, which is XORed with a salt to form the nonce used
 in AEAD encryption. The counter value is formed by encoding the Group ID
 as a 64-bit big-endian unsigned integer, followed by the Object ID
-encoded as a 32-bit big-endian unsigned integer. This
+encoded as a 32-bit big-endian unsigned integer formed
+by the xor of the high and low 32 bits of the ObjectID. This
 encryption/decryption will fail if applied to an object where group ID
-is larger than 2^64-1 or the object ID is larger than 2^32-1 and the
+or Object ID is larger than 2^64-1 and the
 MoQT Object MUST NOT be processed further.
 
 MOQT supports Object IDs larger than 32 bits. However, for common AEAD
@@ -501,10 +505,14 @@ ciphers such as AES-GCM, performance is better when the nonce is 96
 bits. For MOQT’s primary use cases, applications can typically design
 their track, group, and object structure so that Object IDs do not need
 to exceed 32 bits, making this a reasonable performance tradeoff.
+Secure objects can be used in cases where the Object ID is greater than
+2^32-1 but the applications MUST be designed such that the XOR of the
+high and low 32 bits results in value that is unique for every
+Object in the group.
 
 The Group ID and Object ID could both have been limited to, for example,
 48 bits each. However, because 32 bit Object IDs were large enough for
-the identified use cases, the Object ID field was left at 32 bits.
+the most use cases, the Xor Object ID field was set to  32 bits.
 
 
 ## Key and Salt Derivation {#keys}
@@ -852,7 +860,7 @@ some safeguards that make it safer to use short tags, namely:
 * MoQT has hop-by-hop protections provided by the underlying QUIC layer,
   so a brute-force attack could only be mounted by a relay.
 
-* In some usecases MoQT tracks have predictable object arrival rates, so
+* In some use cases MoQT tracks have predictable object arrival rates, so
   a receiver can interpret a large deviation from this rate as a sign of
   an attack.
 
@@ -1027,6 +1035,9 @@ properties. Thank you to Magnus Westerlund for doing a thorough
 security review.
 
 # Test Vectors {#test-vectors}
+
+TODO - Test vector needed to be updated to include a case with Object ID
+> 2^32.
 
 This appendix provides test vectors for verifying implementations of the
 MOQ Secure Objects encryption scheme. The vectors are presented in JSON
