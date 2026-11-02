@@ -495,10 +495,7 @@ counter (CTR) value, which is XORed with a salt to form the nonce used
 in AEAD encryption. The counter value is formed by encoding the Group ID
 as a 64-bit big-endian unsigned integer, followed by the Object ID
 encoded as a 32-bit big-endian unsigned integer formed
-by the XOR of the high and low 32 bits of the ObjectID. This
-encryption/decryption will fail if applied to an object where group ID
-or Object ID is larger than 2^64-1 and the
-MoQT Object MUST NOT be processed further.
+by the XOR of the high and low 32 bits of the ObjectID.
 
 MOQT supports Object IDs larger than 32 bits. However, for common AEAD
 ciphers such as AES-GCM, performance is better when the nonce is 96
