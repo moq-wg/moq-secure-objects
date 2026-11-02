@@ -512,7 +512,7 @@ Object in the group.
 
 The Group ID and Object ID could both have been limited to, for example,
 48 bits each. However, because 32 bit Object IDs were large enough for
-the most use cases, the Xor Object ID field was set to  32 bits.
+most use cases, the XOR Object ID field was set to 32 bits.
 
 
 ## Key and Salt Derivation {#keys}
