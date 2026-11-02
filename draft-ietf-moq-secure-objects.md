@@ -507,7 +507,7 @@ their track, group, and object structure so that Object IDs do not need
 to exceed 32 bits, making this a reasonable performance tradeoff.
 Secure objects can be used in cases where the Object ID is greater than
 2^32-1 but the applications MUST be designed such that the XOR of the
-high and low 32 bits results in value that is unique for every
+high and low 32 bits results in a value that is unique for every
 Object in the group.
 
 The Group ID and Object ID could both have been limited to, for example,
